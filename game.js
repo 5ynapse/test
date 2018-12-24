@@ -1,4 +1,5 @@
 // game file test
+// source : https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/Collision_detection
 
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
@@ -14,9 +15,24 @@ var rightPressed = false;
 var leftPressed = false;
 var myScore;
 var punkt;
+gameOverNotify = document.querySelector('.game-over-notify');
+var interval;
+var bricks = [];
+var brickRowCount = 5;
+var brickColumnCount = 3;
+var brickWidth = 75;
+var brickHeight = 20;
+var brickPadding = 10;
+var brickOffsetTop = 30;
+var brickOffsetLeft = 30;
+
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
+
+gameOverNotify.addEventListener("click", function() {
+    document.location.reload();
+  });
 
 function keyDownHandler(e) {
     if(e.keyCode == 39) {
@@ -32,6 +48,47 @@ function keyUpHandler(e) {
     }
     else if(e.keyCode == 37) {
         leftPressed = false;
+    }
+}
+
+function collisionDetection() {
+    for(var c=0; c<brickColumnCount; c++) {
+      for(var r=0; r<brickRowCount; r++) {
+        var b = bricks[c][r];
+        if(b.status == 1) {
+          if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+            dy = -dy;
+            b.status = 0;
+          }
+        }
+      }
+    }
+  }
+
+function setupBrick() {
+    for(var c=0; c<brickColumnCount; c++) {
+        bricks[c] = [];
+        for(var r=0; r<brickRowCount; r++) {
+          bricks[c][r] = { x: 0, y: 0, status: 1 };
+        }
+      }
+    }
+
+function drawBricks() {
+    for(var c=0; c<brickColumnCount; c++) {
+        for(var r=0; r<brickRowCount; r++) {
+          if(bricks[c][r].status == 1) {
+            var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+            var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+            bricks[c][r].x = brickX;
+            bricks[c][r].y = brickY;
+            ctx.beginPath();
+            ctx.rect(brickX, brickY, brickWidth, brickHeight);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+          }
+        }
     }
 }
 
@@ -52,8 +109,10 @@ function drawPaddle() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBricks();
     drawBall();
     drawPaddle();
+    collisionDetection();
 
     if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
         dx = -dx;
@@ -67,8 +126,11 @@ function draw() {
             punkt+=1;
         }
         else {
-            alert("GAME OVER");
-            document.location.reload();
+            //alert("GAME OVER");
+            //document.location.reload();
+            gameOverNotify.style.display = 'flex';
+            clearInterval(interval);
+            return;
         }
     }
 
@@ -85,8 +147,11 @@ function draw() {
     myScore.update();
 }
 
-
+// Start game
 function startGame() {
     //myScore = new component("30px", "Consolas", "black", 280, 40, "text");
+
+    setupBrick();
+
     setInterval(draw, 10);
 }
