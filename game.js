@@ -28,6 +28,10 @@ var brickPadding = 10;
 var brickOffsetTop = 30;
 var brickOffsetLeft = 30;
 
+var mySound;
+var mySound2;
+var mySound3;
+
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -71,6 +75,7 @@ function collisionDetection() {
                     dy = -dy;
                     b.status = 0;
                     score++;
+                    mySound.play();
                 }
             }
         }
@@ -130,6 +135,7 @@ function drawScore() {
     ctx.fillText("Score: "+score, 8, 20);
   }
 
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBricks();
@@ -137,7 +143,6 @@ function draw() {
     drawPaddle();
     drawScore();
     collisionDetection();
-   
 
     if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
         dx = -dx;
@@ -149,10 +154,12 @@ function draw() {
         if (x > paddleX && x < paddleX + paddleWidth) {
             dy = -dy;
             punkt += 1;
+            mySound2.play();
         }
         else {
             //alert("GAME OVER");
             //document.location.reload();
+            mySound3.play();
             gameOverNotify.style.display = 'flex';
             clearInterval(interval);
             return;
@@ -168,15 +175,32 @@ function draw() {
 
     x += dx;
     y += dy;
-    //myScore.text = "SCORE: " + punkt;
-    //myScore.update();
+}
+
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }
 }
 
 // Start game
 function startGame() {
     //myScore = new component("30px", "Consolas", "black", 280, 40, "text");
 
+    mySound = new sound("resources/s1.mp3");
+    mySound2 = new sound("resources/s2.mp3");
+    mySound3 = new sound("resources/end.mp3");
+
     setupBrick();
 
-    setInterval(draw, 10);
+    interval=setInterval(draw, 10);
 }
